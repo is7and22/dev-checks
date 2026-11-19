@@ -57,3 +57,17 @@
 - 發現非改不可的設計問題就停下來回報
 
 ## 進度
+
+13:18 backend-first-checks：第 1–7 項做完，分支 `backend-first-checks`。本機 `python -m unittest discover -s tests -t .` 25 支綠（含 4 支走真 pre-commit 4.7.0 框架），`pre-commit run --all-files` 兩支 Passed。
+
+- 驗收 1、3、突變（commit 後做，`git checkout` 還原，還原後全綠）：拿掉「實際路徑：」「寫入端：」「驗收分派：」各自讓 `test_each_label_is_required` 對應子測試紅；`forbidden-text` 沒 pattern 改回傳 0 → 4 支紅；hook `files` 改成 `^docs/task/` → try-repo 2 支紅；不跳過二進位 → 1 支紅；接受半形冒號 → 1 支紅
+- 驗收 4（暫存 repo，`try-repo <worktree> ticket-format --files docs/tasks/2026-11-19-缺行.md`）：缺行時 `Failed`，印「docs/tasks/2026-11-19-缺行.md: 缺 「驗收分派：」」與理由；補上後 `Passed`
+- 驗收 5：try-repo 不能帶 args，所以 `try-repo ... forbidden-text` 印「設定錯誤：沒有給任何 --pattern」並 `Failed`（exit 2）；用 config 帶 `args: [--pattern, "secret-repo/"]` 跑 `pre-commit run`，印「notes.md:1: 引用了 secret-repo/x」`Failed`，改乾淨後 `Passed`。兩條都另寫進 `tests/test_try_repo.py`，CI 上 `REQUIRE_PRE_COMMIT=1` 不略過
+- 驗收 6：未驗。推分支被 GitHub 拒絕，token 缺 `workflow` scope，不能推 `.github/workflows/`。已回報協調，等使用者跑 `gh auth refresh -h github.com -s workflow`
+- 設計補充：`forbidden-text` 的 manifest 預設 `exclude: ^\.pre-commit-config\.yaml$`。引用端的 config 一定含 pattern 字面，不排除的話 `--all-files` 永遠紅。引用端若自己寫 `exclude` 會蓋掉它，README 已註明
+- 設計補充：`language: python` 需要可安裝的套件，加了 `pyproject.toml`（console_scripts `ticket-format`、`forbidden-text`）
+- try-repo 只帶已追蹤檔的改動，未追蹤的新檔帶不進去；測試因此先把工作區快照成一個 commit 再跑
+- 本 repo 的 `forbidden-text` 只守 `docs/` 與 `README.md`（pattern：`/Users/`、`[[`），因為測試檔本來就含這些字面
+- 沒加的檢查：派工單在程式碼區塊裡引用三行標籤時也算找到（正文缺仍會通過）。機率低，沒處理；要擋再開單
+
+diff 審查：唯讀子代理審 `origin/main..HEAD`，對照單子的驗收、最容易漏的地方、接線、測試品質、CI。本機找不到 `python-expert` skill（對應的 repo 不在這台），子代理沒載 skill，改給它逐項清單。沒有應修項。已修：行號只在 `\n` 斷（原本 `splitlines()` 遇 `\x0c` 會錯號）、第一行 BOM、非 UTF-8 給訊息而非 traceback、try-repo 範圍測試改中文檔名走 git 列檔、測試 git 去掉 `GIT_*` 環境並關 gpgsign。不修：程式碼區塊裡的標籤（見上）、本 repo forbidden-text 範圍（見上）、`jdx/mise-action` v2 升 v3（v2 仍可用）

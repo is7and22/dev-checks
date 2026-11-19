@@ -79,6 +79,19 @@ class TicketFormatTest(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("「實際路徑：」", out)
 
+    def test_bom_on_first_line_is_ignored(self):
+        text = "\ufeff實際路徑：無\n寫入端：無\n驗收分派：自驗\n"
+        code, out = run([self.write("bom.md", text)])
+        self.assertEqual(code, 0, out)
+
+    def test_non_utf8_fails_with_message(self):
+        path = os.path.join(self.dir, "big5.md")
+        with open(path, "wb") as f:
+            f.write("實際路徑：無".encode("big5"))
+        code, out = run([path])
+        self.assertEqual(code, 1)
+        self.assertIn("不是 UTF-8", out)
+
     def test_chinese_filename(self):
         bad = self.write("2026-11-19-中文單.md", "# 只有標題\n")
         code, out = run([bad])

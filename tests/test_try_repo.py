@@ -19,7 +19,7 @@ PRE_COMMIT = shutil.which("pre-commit")
 COMPLETE = "# 單\n\n實際路徑：不適用（無）\n寫入端：不適用（無）\n驗收分派：自驗\n"
 
 GIT_ENV = dict(
-    os.environ,
+    {k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
     GIT_AUTHOR_NAME="test",
     GIT_AUTHOR_EMAIL="test@example.invalid",
     GIT_COMMITTER_NAME="test",
@@ -29,7 +29,7 @@ GIT_ENV = dict(
 
 def git(cwd, *args):
     return subprocess.run(
-        ["git", *args], cwd=cwd, check=True, env=GIT_ENV,
+        ["git", "-c", "commit.gpgsign=false", *args], cwd=cwd, check=True, env=GIT_ENV,
         capture_output=True, text=True,
     ).stdout
 
@@ -104,13 +104,14 @@ class PreCommitFrameworkTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_ticket_format_files_scope(self):
-        # 框架要把 docs/tasks/ 的單交給 hook；README 與範圍外的檔不交
-        self.write("docs/tasks/a.md", "# 缺三行\n")
+        # 框架要把 docs/tasks/ 的單交給 hook；範圍外的檔不交。README 有 hook exclude 與程式兩層，這條只驗結果
+        # 中文檔名走 git 列檔的路徑（git 預設把非 ASCII 印成八進位轉義）
+        self.write("docs/tasks/中文缺行.md", "# 缺三行\n")
         self.write("docs/tasks/README.md", "# 目錄\n")
         self.write("docs/other/b.md", "# 範圍外\n")
         code, out = self.pre_commit("try-repo", self.snapshot, "ticket-format", "--all-files")
         self.assertNotEqual(code, 0, out)
-        self.assertIn("docs/tasks/a.md", out)
+        self.assertIn("docs/tasks/中文缺行.md", out)
         self.assertNotIn("README.md: 缺", out)
         self.assertNotIn("docs/other/b.md", out)
 

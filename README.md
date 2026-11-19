@@ -39,5 +39,5 @@ pre-commit run --all-files    # CI 與手動全掃
 - 新增檢查：寫在 `checks/`，登記在 `.pre-commit-hooks.yaml`，測試放 `tests/`，更新上表
 - 工具版本固定在 `mise.toml`（Python、pre-commit）：`mise install`
 - 測試：`python -m unittest discover -s tests -t .`。`tests/test_try_repo.py` 在暫存 repo 裡走真的 pre-commit 框架，本機沒裝 pre-commit 時略過，CI 不略過
-- `forbidden-text` 不檢 `.pre-commit-config.yaml`：它本身一定含 pattern 的字面
+- `forbidden-text` 不檢 `.pre-commit-config.yaml`：它本身一定含 pattern 的字面。引用端自己寫 `exclude` 會蓋掉這個預設，要把它併進去
 - 發版：改完打新 tag，引用的項目跑 `pre-commit autoupdate`

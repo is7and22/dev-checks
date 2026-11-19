@@ -82,6 +82,12 @@ class ForbiddenTextTest(unittest.TestCase):
         self.assertIn(":3: baz", out)
         self.assertNotIn(":2:", out)
 
+    def test_line_numbers_only_count_newlines(self):
+        path = self.write("a.md", "一\x0c仍是第一行\r\nsecret\r\n")
+        code, out = run(["--pattern", "secret", path])
+        self.assertEqual(code, 1)
+        self.assertEqual(out, "{}:2: secret\n".format(path))
+
     def test_binary_file_is_skipped(self):
         path = self.write("a.png", b"\x89PNG\r\n\x00\x00secret-repo/\x00")
         code, out = run(["--pattern", "secret-repo/", path])

@@ -17,7 +17,9 @@ def is_binary(data):
 def find_hits(text, patterns):
     """回傳 [(行號, 該行)]，行號從 1 起算。"""
     hits = []
-    for lineno, line in enumerate(text.splitlines(), start=1):
+    # 只在 \n 斷行：splitlines() 也在 \x0c 等字元斷，行號會和編輯器對不上
+    for lineno, line in enumerate(text.split("\n"), start=1):
+        line = line.rstrip("\r")
         if any(p in line for p in patterns):
             hits.append((lineno, line))
     return hits

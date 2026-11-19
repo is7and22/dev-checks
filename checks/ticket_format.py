@@ -20,7 +20,7 @@ def missing_labels(text):
     """回傳 text 裡缺的標籤。標籤要在行首（可有前導空白），且後面有值。"""
     found = set()
     for line in text.splitlines():
-        stripped = line.lstrip()
+        stripped = line.lstrip().lstrip("\ufeff")
         for label, _ in REQUIRED_LABELS:
             if stripped.startswith(label) and stripped[len(label):].strip():
                 found.add(label)
@@ -40,8 +40,13 @@ def main(argv=None):
     for filename in args.filenames:
         if os.path.basename(filename) == "README.md":
             continue
-        with open(filename, encoding="utf-8") as f:
-            text = f.read()
+        try:
+            with open(filename, encoding="utf-8") as f:
+                text = f.read()
+        except UnicodeDecodeError:
+            failed = True
+            print("{}: 不是 UTF-8，讀不了".format(filename))
+            continue
         missing = missing_labels(text)
         if not missing:
             continue
