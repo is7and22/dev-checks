@@ -71,3 +71,5 @@
 - 沒加的檢查：派工單在程式碼區塊裡引用三行標籤時也算找到（正文缺仍會通過）。機率低，沒處理；要擋再開單
 
 diff 審查：唯讀子代理審 `origin/main..HEAD`，對照單子的驗收、最容易漏的地方、接線、測試品質、CI。本機找不到 `python-expert` skill（對應的 repo 不在這台），子代理沒載 skill，改給它逐項清單。沒有應修項。已修：行號只在 `\n` 斷（原本 `splitlines()` 遇 `\x0c` 會錯號）、第一行 BOM、非 UTF-8 給訊息而非 traceback、try-repo 範圍測試改中文檔名走 git 列檔、測試 git 去掉 `GIT_*` 環境並關 gpgsign。不修：程式碼區塊裡的標籤（見上）、本 repo forbidden-text 範圍（見上）、`jdx/mise-action` v2 升 v3（v2 仍可用）
+
+13:24 backend-first-checks：補上 `workflow` scope 後推分支。驗收 6 綠：Actions run 44464891400（commit `c6347a8`），unittest 25 支無略過、本 repo 的 pre-commit 兩支 Passed。前一次 run 44464776942 紅，是 `forbidden-text` 擋下本進度段直接引用 pattern 的那行，改措辭後綠。Actions 有 Node 20 棄用警告（`actions/checkout@v4`、`jdx/mise-action@v2`），不影響結果，升版另開單。併 main。
