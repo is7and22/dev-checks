@@ -67,7 +67,7 @@
 - 設計補充：`forbidden-text` 的 manifest 預設 `exclude: ^\.pre-commit-config\.yaml$`。引用端的 config 一定含 pattern 字面，不排除的話 `--all-files` 永遠紅。引用端若自己寫 `exclude` 會蓋掉它，README 已註明
 - 設計補充：`language: python` 需要可安裝的套件，加了 `pyproject.toml`（console_scripts `ticket-format`、`forbidden-text`）
 - try-repo 只帶已追蹤檔的改動，未追蹤的新檔帶不進去；測試因此先把工作區快照成一個 commit 再跑
-- 本 repo 的 `forbidden-text` 只守 `docs/` 與 `README.md`（pattern：`/Users/`、`[[`），因為測試檔本來就含這些字面
+- 本 repo 的 `forbidden-text` 只守 `docs/` 與 `README.md`（pattern 是本機家目錄的絕對路徑開頭、雙中括號連結語法，見 `.pre-commit-config.yaml`），因為測試檔本來就含這些字面。CI 第一次跑就擋下了本段的舊寫法，它原本直接引用了 pattern
 - 沒加的檢查：派工單在程式碼區塊裡引用三行標籤時也算找到（正文缺仍會通過）。機率低，沒處理；要擋再開單
 
 diff 審查：唯讀子代理審 `origin/main..HEAD`，對照單子的驗收、最容易漏的地方、接線、測試品質、CI。本機找不到 `python-expert` skill（對應的 repo 不在這台），子代理沒載 skill，改給它逐項清單。沒有應修項。已修：行號只在 `\n` 斷（原本 `splitlines()` 遇 `\x0c` 會錯號）、第一行 BOM、非 UTF-8 給訊息而非 traceback、try-repo 範圍測試改中文檔名走 git 列檔、測試 git 去掉 `GIT_*` 環境並關 gpgsign。不修：程式碼區塊裡的標籤（見上）、本 repo forbidden-text 範圍（見上）、`jdx/mise-action` v2 升 v3（v2 仍可用）
