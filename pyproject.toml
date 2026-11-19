@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dev-checks"
+version = "0.1.0"
+description = "各項目共用的 pre-commit 檢查"
+requires-python = ">=3.8"
+
+[project.scripts]
+ticket-format = "checks.ticket_format:main"
+forbidden-text = "checks.forbidden_text:main"
+
+[tool.setuptools]
+packages = ["checks"]

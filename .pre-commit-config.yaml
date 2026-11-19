@@ -1,0 +1,18 @@
+# 本 repo 自己用這兩支檢查守 docs/。
+# repo: local 不會安裝本 repo，所以用 python -m 從工作目錄載入 checks。
+repos:
+  - repo: local
+    hooks:
+      - id: ticket-format
+        name: ticket-format
+        entry: python -m checks.ticket_format
+        language: python
+        files: ^docs/tasks/.*\.md$
+        exclude: (^|/)README\.md$
+      - id: forbidden-text
+        name: forbidden-text
+        entry: python -m checks.forbidden_text
+        language: python
+        files: ^(docs/.*|README\.md)$
+        # 本機家目錄的絕對路徑、雙中括號連結語法
+        args: [--pattern, "/Users/", --pattern, "[["]

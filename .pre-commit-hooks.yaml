@@ -1,0 +1,15 @@
+- id: ticket-format
+  name: ticket-format（派工單三行標籤）
+  description: docs/tasks/ 的派工單要有「實際路徑：」「寫入端：」「驗收分派：」
+  entry: ticket-format
+  language: python
+  files: ^docs/tasks/.*\.md$
+  exclude: (^|/)README\.md$
+
+- id: forbidden-text
+  name: forbidden-text（不該出現的字串）
+  description: 檔案出現 --pattern 給的字串就失敗；沒給 --pattern 視為設定錯誤
+  entry: forbidden-text
+  language: python
+  # .pre-commit-config.yaml 本身一定含 pattern 字面，不排除就永遠失敗
+  exclude: ^\.pre-commit-config\.yaml$

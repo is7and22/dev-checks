@@ -8,8 +8,8 @@
 
 | hook id | 擋什麼 | 狀態 |
 |---|---|---|
-| `ticket-format` | `docs/tasks/` 裡的派工單缺必要的行：「實際路徑：」「寫入端：」「驗收分派：」 | 未做 |
-| `forbidden-text` | repo 裡出現不該出現的字串，例如另一個 repo 的路徑或內部連結語法。字串由引用的項目用 `args` 給 | 未做 |
+| `ticket-format` | `docs/tasks/` 裡的派工單缺必要的行：「實際路徑：」「寫入端：」「驗收分派：」 | 有 |
+| `forbidden-text` | repo 裡出現不該出現的字串，例如另一個 repo 的路徑或內部連結語法。字串由引用的項目用 `args` 給 | 有 |
 
 每支檢查都附會紅的測試：放一份違規的檔，確認檢查擋下並說出缺什麼。
 
@@ -37,4 +37,7 @@ pre-commit run --all-files    # CI 與手動全掃
 
 - 檢查用 Python 寫，只用標準函式庫
 - 新增檢查：寫在 `checks/`，登記在 `.pre-commit-hooks.yaml`，測試放 `tests/`，更新上表
+- 工具版本固定在 `mise.toml`（Python、pre-commit）：`mise install`
+- 測試：`python -m unittest discover -s tests -t .`。`tests/test_try_repo.py` 在暫存 repo 裡走真的 pre-commit 框架，本機沒裝 pre-commit 時略過，CI 不略過
+- `forbidden-text` 不檢 `.pre-commit-config.yaml`：它本身一定含 pattern 的字面
 - 發版：改完打新 tag，引用的項目跑 `pre-commit autoupdate`
