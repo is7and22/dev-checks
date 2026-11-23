@@ -40,7 +40,7 @@ RESPONSE_WORDS = ("OpenAPI", "回傳", "新欄位")
 
 def _lines(text):
     for line in text.splitlines():
-        yield line.lstrip().lstrip("﻿")
+        yield line.lstrip().lstrip("\ufeff")
 
 
 def _has_label(text, label):

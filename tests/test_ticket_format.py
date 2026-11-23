@@ -127,7 +127,6 @@ class TicketFormatTest(unittest.TestCase):
         self.assertIn(c, out)
         self.assertNotIn(b + ":", out)
 
-
     # 以下是 2026-11-23 起的新三項
 
     def test_new_labels_are_required(self):
