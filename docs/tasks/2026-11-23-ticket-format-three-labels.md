@@ -72,3 +72,5 @@ diff 審查：唯讀子代理審 `origin/main..HEAD`，對照單子的 1–5、�
 09:46 dev-checks-7f：照協調 [決定] 補兩件。（1）`.pre-commit-hooks.yaml` 的 name 改成「派工單必要項」，description 列出六項；`pyproject.toml` 的 version 改成 0.2.0；README 範例改成 `rev: v0.2.0`。（2）判斷「範圍：」前，先去掉行首的空白、`>`、`- `、`* `、`#`。新增 `test_old_app_scope_line_prefixes`，`> `、`- `、`* `、`### `、`> - `、`  >` 這幾種前綴都要觸發；另一條測試確認 `> 範圍:`（半形冒號）照舊不算。突變：不去掉前綴時，6 個子測試全紅；已還原。本機 43 支測試全綠，`pre-commit run --all-files` 兩支都 Passed。
 
 diff 審查（第二批）：改動只有 22 行，由我自己逐行對照協調的決定審過，沒有再開子代理。
+
+09:46 dev-checks-7f：Actions 在 commit `9aa3c78` 上是綠的；已併 main 並 push。
