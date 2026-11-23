@@ -19,7 +19,7 @@
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/is7and22/dev-checks
-    rev: v0.1.0          # 用 tag，pre-commit autoupdate 升級
+    rev: v0.2.0          # 用 tag，pre-commit autoupdate 升級
     hooks:
       - id: ticket-format
       - id: forbidden-text

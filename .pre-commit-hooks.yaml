@@ -1,6 +1,6 @@
 - id: ticket-format
-  name: ticket-format（派工單三行標籤）
-  description: docs/tasks/ 的派工單要有「實際路徑：」「寫入端：」「驗收分派：」
+  name: ticket-format（派工單必要項）
+  description: docs/tasks/ 的派工單要有「實際路徑：」「寫入端：」「驗收分派：」；2026-11-23 起的單另要「最容易漏」「手冊：」，範圍含後端又動到回傳時要「舊版 app 相容：」
   entry: ticket-format
   language: python
   files: ^docs/tasks/.*\.md$

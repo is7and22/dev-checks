@@ -35,6 +35,8 @@ NEW_REASONS = {
 }
 
 BACKEND_WORDS = ("backend", "後端")
+# 「範圍：」行前面可能有引用、清單、標題的記號，判斷前去掉
+SCOPE_PREFIX = re.compile(r"^(?:\s|>|[-*](?=\s)|#)+")
 RESPONSE_WORDS = ("OpenAPI", "回傳", "新欄位")
 
 
@@ -62,9 +64,9 @@ def _has_easy_to_miss(text):
 
 
 def _needs_old_app(text):
-    """只看以「範圍：」開頭的那一行判斷後端，不看全文。"""
+    """只看以「範圍：」開頭的那一行判斷後端，不看全文。行首的 `>`、`- `、`* `、`#` 不算。"""
     backend = any(
-        s.startswith("範圍：")
+        SCOPE_PREFIX.sub("", s).startswith("範圍：")
         and any(w in s.lower() for w in BACKEND_WORDS)
         for s in _lines(text)
     )

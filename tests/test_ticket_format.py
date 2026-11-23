@@ -198,6 +198,20 @@ class TicketFormatTest(unittest.TestCase):
         text = BACKEND_NEW_FIELD.replace("範圍：後端加欄位", "範圍：Backend 加欄位")
         self.assertEqual(run([self.write("2026-11-23-c.md", text)])[0], 1)
 
+    def test_old_app_scope_line_prefixes(self):
+        # 引用、清單、標題記號後面的「範圍：」也算
+        for prefix in ("> ", "- ", "* ", "### ", "> - ", "  >"):
+            with self.subTest(prefix=prefix):
+                text = BACKEND_NEW_FIELD.replace("範圍：後端加欄位", prefix + "範圍：後端加欄位")
+                code, out = run([self.write("2026-11-23-p.md", text)])
+                self.assertEqual(code, 1, out)
+                self.assertIn("「舊版 app 相容：」", out)
+
+    def test_old_app_scope_halfwidth_colon_does_not_count(self):
+        text = BACKEND_NEW_FIELD.replace("範圍：後端加欄位", "> 範圍:後端加欄位")
+        code, out = run([self.write("2026-11-23-h.md", text)])
+        self.assertEqual(code, 0, out)
+
     def test_old_app_not_required_for_frontend_only(self):
         text = BACKEND_NEW_FIELD.replace("範圍：後端加欄位", "範圍：frontend")
         code, out = run([self.write("2026-11-23-前端.md", text)])
