@@ -68,3 +68,7 @@
 diff 審查：唯讀子代理審 `origin/main..HEAD`，對照單子的 1–5、最容易漏的地方、驗收、邊界情況（BOM、CRLF、冒號、空值、目錄名、Python 3.8）。本機沒有 Python 的審查 skill，子代理沒有載 skill，改給逐項清單。沒有應修項。已修：BOM 原本是直接寫進原始碼、看不見的字元，改回 `﻿` 跳脫；測試多一個空行。不修：上面兩項交協調；`最容易漏 ：`（中間有空格）會算通過，影響小；程式碼區塊裡的內容也會被算進去，跟原本三行標籤的行為一致
 
 09:45 dev-checks-7f：驗收 7 綠：Actions run 45096258067（commit `b3038a3`）。已併 main 並 push，分支 `backend-ticket-format` 也推了。沒有打 tag。
+
+09:46 dev-checks-7f：照協調 [決定] 補兩件。（1）`.pre-commit-hooks.yaml` 的 name 改成「派工單必要項」，description 列出六項；`pyproject.toml` 的 version 改成 0.2.0；README 範例改成 `rev: v0.2.0`。（2）判斷「範圍：」前，先去掉行首的空白、`>`、`- `、`* `、`#`。新增 `test_old_app_scope_line_prefixes`，`> `、`- `、`* `、`### `、`> - `、`  >` 這幾種前綴都要觸發；另一條測試確認 `> 範圍:`（半形冒號）照舊不算。突變：不去掉前綴時，6 個子測試全紅；已還原。本機 43 支測試全綠，`pre-commit run --all-files` 兩支都 Passed。
+
+diff 審查（第二批）：改動只有 22 行，由我自己逐行對照協調的決定審過，沒有再開子代理。
