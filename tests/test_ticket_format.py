@@ -11,6 +11,17 @@ COMPLETE = """# 某張單
 實際路徑：不適用（沒有使用者畫面）
 寫入端：不適用（沒有資料）
 驗收分派：執行者自驗
+手冊：不適用（沒有使用者手冊）
+
+## 最容易漏的地方
+
+- 某件事
+"""
+
+# 範圍含後端、內文提到新欄位，缺「舊版 app 相容：」
+BACKEND_NEW_FIELD = COMPLETE + """
+範圍：後端加欄位
+回應多一個新欄位
 """
 
 
@@ -80,7 +91,7 @@ class TicketFormatTest(unittest.TestCase):
         self.assertIn("「實際路徑：」", out)
 
     def test_bom_on_first_line_is_ignored(self):
-        text = "\ufeff實際路徑：無\n寫入端：無\n驗收分派：自驗\n"
+        text = "\ufeff實際路徑：無\n寫入端：無\n驗收分派：自驗\n手冊：無\n最容易漏：無\n"
         code, out = run([self.write("bom.md", text)])
         self.assertEqual(code, 0, out)
 
@@ -115,6 +126,129 @@ class TicketFormatTest(unittest.TestCase):
         self.assertIn(a, out)
         self.assertIn(c, out)
         self.assertNotIn(b + ":", out)
+
+
+    # 以下是 2026-11-23 起的新三項
+
+    def test_new_labels_are_required(self):
+        # 程式裡拿掉「手冊：」或「最容易漏」的檢查，對應子測試會紅
+        cases = {
+            "手冊：": COMPLETE.replace("手冊：不適用（沒有使用者手冊）\n", ""),
+            "最容易漏": COMPLETE.replace("## 最容易漏的地方\n", ""),
+        }
+        for label, text in cases.items():
+            with self.subTest(label=label):
+                path = self.write("2026-11-23-缺{}.md".format(label.rstrip("：")), text)
+                code, out = run([path])
+                self.assertEqual(code, 1)
+                self.assertIn("缺 「{}」".format(label), out)
+                self.assertIn(path, out)
+                self.assertIn(ticket_format.NEW_REASONS[label], out)
+
+    def test_manual_label_fixed_passes(self):
+        text = COMPLETE.replace("手冊：不適用（沒有使用者手冊）\n", "")
+        self.assertEqual(run([self.write("2026-11-23-a.md", text)])[0], 1)
+        text += "手冊：不適用（沒有使用者手冊）\n"
+        code, out = run([self.write("2026-11-23-a.md", text)])
+        self.assertEqual(code, 0, out)
+
+    def test_manual_halfwidth_colon_does_not_count(self):
+        text = COMPLETE.replace("手冊：", "手冊:")
+        code, out = run([self.write("2026-11-23-half.md", text)])
+        self.assertEqual(code, 1)
+        self.assertIn("「手冊：」", out)
+
+    def test_manual_without_value_does_not_count(self):
+        text = COMPLETE.replace("手冊：不適用（沒有使用者手冊）", "手冊：")
+        code, out = run([self.write("2026-11-23-empty.md", text)])
+        self.assertEqual(code, 1)
+        self.assertIn("「手冊：」", out)
+
+    def test_easy_to_miss_forms(self):
+        base = COMPLETE.replace("## 最容易漏的地方\n", "")
+        ok = ("## 最容易漏的地方", "# 最容易漏", "最容易漏：日期門檻", "  ### 最容易漏的", "## 最容易漏：寫反")
+        for line in ok:
+            with self.subTest(line=line):
+                code, out = run([self.write("2026-11-23-ok.md", base + line + "\n")])
+                self.assertEqual(code, 0, out)
+        bad = ("最容易漏：", "## 最容易漏：  ", "最容易漏:日期", "要寫最容易漏的地方", "## 注意最容易漏")
+        for line in bad:
+            with self.subTest(line=line):
+                code, out = run([self.write("2026-11-23-bad.md", base + line + "\n")])
+                self.assertEqual(code, 1, line)
+                self.assertIn("「最容易漏」", out)
+
+    def test_old_app_required_for_backend_response_change(self):
+        path = self.write("2026-11-23-後端.md", BACKEND_NEW_FIELD)
+        code, out = run([path])
+        self.assertEqual(code, 1)
+        self.assertIn("缺 「舊版 app 相容：」", out)
+        self.assertIn(ticket_format.NEW_REASONS["舊版 app 相容："], out)
+
+        fixed = BACKEND_NEW_FIELD + "舊版 app 相容：舊 app 忽略多的欄位\n"
+        code, out = run([self.write("2026-11-23-後端.md", fixed)])
+        self.assertEqual(code, 0, out)
+
+    def test_old_app_trigger_words(self):
+        for word in ("OpenAPI", "回傳", "新欄位"):
+            with self.subTest(word=word):
+                text = COMPLETE + "範圍：backend\n改" + word + "\n"
+                self.assertEqual(run([self.write("2026-11-23-w.md", text)])[0], 1)
+
+    def test_old_app_backend_word_is_case_insensitive(self):
+        text = BACKEND_NEW_FIELD.replace("範圍：後端加欄位", "範圍：Backend 加欄位")
+        self.assertEqual(run([self.write("2026-11-23-c.md", text)])[0], 1)
+
+    def test_old_app_not_required_for_frontend_only(self):
+        text = BACKEND_NEW_FIELD.replace("範圍：後端加欄位", "範圍：frontend")
+        code, out = run([self.write("2026-11-23-前端.md", text)])
+        self.assertEqual(code, 0, out)
+
+    def test_old_app_backend_only_judged_on_scope_line(self):
+        # 範圍只有前端，內文別處提到後端與新欄位：不要求
+        text = BACKEND_NEW_FIELD.replace("範圍：後端加欄位", "範圍：frontend\n後端那邊已經有這個新欄位")
+        code, out = run([self.write("2026-11-23-前端提後端.md", text)])
+        self.assertEqual(code, 0, out)
+
+    def test_old_app_not_required_without_response_words(self):
+        text = COMPLETE + "範圍：後端改排程\n"
+        code, out = run([self.write("2026-11-23-排程.md", text)])
+        self.assertEqual(code, 0, out)
+
+    def test_date_threshold(self):
+        # 缺新三項的單：11-22 通過（舊單不被新規則弄紅），改名 11-23 就失敗
+        text = BACKEND_NEW_FIELD.replace("手冊：不適用（沒有使用者手冊）\n", "").replace(
+            "## 最容易漏的地方\n", ""
+        )
+        code, out = run([self.write("2026-11-22-舊單.md", text)])
+        self.assertEqual(code, 0, out)
+
+        code, out = run([self.write("2026-11-23-舊單.md", text)])
+        self.assertEqual(code, 1)
+        self.assertIn("「最容易漏」、「手冊：」、「舊版 app 相容：」", out)
+
+        code, out = run([self.write("2026-12-01-新單.md", text)])
+        self.assertEqual(code, 1)
+        code, out = run([self.write("2025-12-31-舊單.md", text)])
+        self.assertEqual(code, 0, out)
+
+    def test_old_ticket_still_needs_original_labels(self):
+        code, out = run([self.write("2026-11-22-缺.md", "# 只有標題\n")])
+        self.assertEqual(code, 1)
+        self.assertIn("缺 「實際路徑：」、「寫入端：」、「驗收分派：」\n", out)
+
+    def test_undated_filename_uses_new_rules(self):
+        text = COMPLETE.replace("手冊：不適用（沒有使用者手冊）\n", "")
+        code, out = run([self.write("no-date.md", text)])
+        self.assertEqual(code, 1)
+        self.assertIn("「手冊：」", out)
+
+    def test_date_in_directory_name_is_ignored(self):
+        # 只看檔名，不看目錄
+        text = COMPLETE.replace("手冊：不適用（沒有使用者手冊）\n", "")
+        os.makedirs(os.path.join(self.dir, "2026-11-01-x"))
+        code, out = run([self.write(os.path.join("2026-11-01-x", "單.md"), text)])
+        self.assertEqual(code, 1)
 
 
 if __name__ == "__main__":

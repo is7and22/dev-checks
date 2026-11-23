@@ -103,6 +103,18 @@ class PreCommitFrameworkTest(unittest.TestCase):
         code, out = self.pre_commit("try-repo", self.snapshot, "ticket-format", "--files", rel)
         self.assertEqual(code, 0, out)
 
+    def test_ticket_format_try_repo_manual_red_then_green(self):
+        rel = "docs/tasks/2026-11-23-缺手冊.md"
+        base = COMPLETE + "\n## 最容易漏的地方\n\n- 某件事\n"
+        self.write(rel, base)
+        code, out = self.pre_commit("try-repo", self.snapshot, "ticket-format", "--files", rel)
+        self.assertNotEqual(code, 0, out)
+        self.assertIn("缺 「手冊：」", out)
+
+        self.write(rel, base + "手冊：不適用（沒有使用者手冊）\n")
+        code, out = self.pre_commit("try-repo", self.snapshot, "ticket-format", "--files", rel)
+        self.assertEqual(code, 0, out)
+
     def test_ticket_format_files_scope(self):
         # 框架要把 docs/tasks/ 的單交給 hook；範圍外的檔不交。README 有 hook exclude 與程式兩層，這條只驗結果
         # 中文檔名走 git 列檔的路徑（git 預設把非 ASCII 印成八進位轉義）

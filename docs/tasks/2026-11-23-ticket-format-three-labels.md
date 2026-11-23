@@ -51,3 +51,5 @@
 - 發現要改的不只這三項，停下來回報
 
 ## 進度
+
+09:40 dev-checks-7f：開工，worktree `~/.claude/worktrees/dev-checks-backend-ticket-format`，分支 `backend-ticket-format`（從 origin/main `8b8837e`）。
